@@ -12,6 +12,8 @@ public partial class Movement : PlayerComponent
     private Vector2 _currentWishDir;
     private Vector2 _lastInput;
     private uint _lastProcessedInput = 0;
+    private float _updateTimer = 0;
+    private float _updateTime = 1f/30f; // 30 update per second
     private Queue<InputState> _pendingInputs = new Queue<InputState>();
 
     public Vector2 GetWishDir()
@@ -37,6 +39,19 @@ public partial class Movement : PlayerComponent
                 Packets.SendPacket(packet, Client.Instance);
                 _lastInput = wishDir;
             }
+
+            if (_lastInput != Vector2.Zero && _updateTimer > _updateTime)
+            {
+                _lastProcessedInput++;
+                var inputState = new InputState(_lastProcessedInput, wishDir, (float)delta);
+                _pendingInputs.Enqueue(inputState);
+                
+                var packet = new C2SMovePacket(_lastProcessedInput, wishDir);
+                Packets.SendPacket(packet, Client.Instance);
+                _lastInput = wishDir;
+                _updateTimer = 0;
+            }
+            _updateTimer += (float)delta;
 
             // Apply prediction
             ApplyInput(wishDir, (float)delta);
