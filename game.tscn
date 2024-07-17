@@ -1,0 +1,41 @@
+[gd_scene load_steps=7 format=3 uid="uid://57buy87r03eh"]
+
+[ext_resource type="Script" path="res://features/game/Game.cs" id="1_3ov0n"]
+[ext_resource type="Script" path="res://features/network/Client.cs" id="1_6h5tb"]
+[ext_resource type="Script" path="res://features/game/Map.cs" id="1_ewn1y"]
+[ext_resource type="Script" path="res://features/network/Server.cs" id="2_m5c1f"]
+[ext_resource type="Script" path="res://features/game/PlayerManager.cs" id="3_gyd3p"]
+[ext_resource type="PackedScene" uid="uid://bj01kfecvp37j" path="res://features/player/player.tscn" id="5_iy0wd"]
+
+[node name="game" type="Node2D"]
+script = ExtResource("1_3ov0n")
+
+[node name="Client" type="Node" parent="." node_paths=PackedStringArray("PlayerManager")]
+script = ExtResource("1_6h5tb")
+PlayerManager = NodePath("../PlayerManager")
+
+[node name="Server" type="Node" parent="." node_paths=PackedStringArray("PlayerManager")]
+script = ExtResource("2_m5c1f")
+PlayerManager = NodePath("../PlayerManager")
+
+[node name="PlayerManager" type="Node" parent="." node_paths=PackedStringArray("CurrentMap", "Players")]
+script = ExtResource("3_gyd3p")
+CurrentMap = NodePath("../Map")
+PlayerPrefab = ExtResource("5_iy0wd")
+Players = NodePath("..")
+
+[node name="Marker2D" type="Marker2D" parent="."]
+position = Vector2(16, 16)
+
+[node name="Marker2D2" type="Marker2D" parent="."]
+position = Vector2(934, 16)
+
+[node name="Marker2D3" type="Marker2D" parent="."]
+position = Vector2(16, 458)
+
+[node name="Marker2D4" type="Marker2D" parent="."]
+position = Vector2(934, 458)
+
+[node name="Map" type="Node" parent="." node_paths=PackedStringArray("Spawnpoints")]
+script = ExtResource("1_ewn1y")
+Spawnpoints = [NodePath("../Marker2D"), NodePath("../Marker2D2"), NodePath("../Marker2D3"), NodePath("../Marker2D4")]

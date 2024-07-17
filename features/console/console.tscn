@@ -1,0 +1,66 @@
+[gd_scene load_steps=3 format=3 uid="uid://bxblfihawye17"]
+
+[ext_resource type="Script" path="res://features/console/ResearchConsole.cs" id="1_hnojm"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_6kqkj"]
+bg_color = Color(0.0588235, 0.0588235, 0.0588235, 0.588235)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.945098, 0.945098, 0.945098, 0.25098)
+border_blend = true
+
+[node name="Console" type="Node" node_paths=PackedStringArray("Command", "ConsoleLayer", "BackdropLayer", "Content")]
+script = ExtResource("1_hnojm")
+Command = NodePath("ConsoleLayer/CenterContainer/ConsolePanel/VBoxContainer/HBoxContainer/LineEdit")
+ConsoleLayer = NodePath("ConsoleLayer")
+BackdropLayer = NodePath("BackdropLayer")
+Content = NodePath("ConsoleLayer/CenterContainer/ConsolePanel/VBoxContainer/Content")
+
+[node name="ConsoleLayer" type="CanvasLayer" parent="."]
+layer = 2
+visible = false
+
+[node name="CenterContainer" type="CenterContainer" parent="ConsoleLayer"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="ConsolePanel" type="PanelContainer" parent="ConsoleLayer/CenterContainer"]
+custom_minimum_size = Vector2(640, 480)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_6kqkj")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="ConsoleLayer/CenterContainer/ConsolePanel"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="ConsoleLayer/CenterContainer/ConsolePanel/VBoxContainer"]
+layout_mode = 2
+text = "Research Console"
+horizontal_alignment = 1
+
+[node name="Content" type="RichTextLabel" parent="ConsoleLayer/CenterContainer/ConsolePanel/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="HBoxContainer" type="HBoxContainer" parent="ConsoleLayer/CenterContainer/ConsolePanel/VBoxContainer"]
+custom_minimum_size = Vector2(0, 24)
+layout_mode = 2
+
+[node name="LineEdit" type="LineEdit" parent="ConsoleLayer/CenterContainer/ConsolePanel/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "Your command here"
+
+[node name="BackdropLayer" type="CanvasLayer" parent="."]
+visible = false
+
+[node name="PanelContainer" type="PanelContainer" parent="BackdropLayer"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
