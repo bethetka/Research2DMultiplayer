@@ -57,7 +57,7 @@ public partial class Server : Node
         if (_status == Status.Listening)
         {
             ProcessNewConnections();
-            ProcessPlayers();
+            ProcessPlayers((float)delta);
         }
     }
 
@@ -80,7 +80,7 @@ public partial class Server : Node
         }
     }
 
-    private void ProcessPlayers()
+    private void ProcessPlayers(float delta)
     {
         foreach (var player in _players.ToList())
         {
@@ -97,13 +97,13 @@ public partial class Server : Node
                 continue; 
             }
             
-            ProcessPlayer(player);
+            ProcessPlayer(player, delta);
         }
     }
 
     public int IdCounter = 0;
 
-    private void ProcessPlayer(ServerPlayer player)
+    private void ProcessPlayer(ServerPlayer player, float delta)
     {
         if (player.Peer.GetAvailableBytes() >= 4)
         {
@@ -117,17 +117,18 @@ public partial class Server : Node
                     var variant = player.Peer.GetVar();
                     packet.FromVariant(variant);
                     packet.Handle(this, player);
-                    
-                    ValidateAndCorrectPlayerPosition(player);
+
+                    // Validate and correct player position after handling the packet
+                    ValidateAndCorrectPlayerPosition(player, delta);
                 }
             }
         }
     }
-    
-    private void ValidateAndCorrectPlayerPosition(ServerPlayer player)
+
+    private void ValidateAndCorrectPlayerPosition(ServerPlayer player, float delta)
     {
         // Simple validation: Check if the player has moved too far since the last processed input
-        float maxMovement = player.Player.Movement.Speed * ((float)GetProcessDeltaTime() * 5); // Allow some leeway
+        float maxMovement = player.Player.Movement.Speed * (delta * 5); // Allow some leeway
         float actualMovement = player.Player.Position.DistanceTo(player.LastProcessedPosition);
 
         if (actualMovement > maxMovement)

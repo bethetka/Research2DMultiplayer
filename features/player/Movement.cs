@@ -1,14 +1,14 @@
-﻿using System.Collections.Generic;
-using Godot;
+﻿using Godot;
 using Research.Network;
 using Research.Network.Packets;
 using Research.Network.Packets.C2S;
+using System.Collections.Generic;
 
 namespace Research.Player;
 
 public partial class Movement : PlayerComponent
 {
-   [Export] public float Speed { get; set; } = 250.0f;
+    [Export] public float Speed { get; set; } = 250.0f;
     private Vector2 _currentWishDir;
     private Vector2 _lastInput;
     private uint _lastProcessedInput = 0;
