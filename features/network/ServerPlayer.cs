@@ -16,6 +16,8 @@ public class ServerPlayer
     public StreamPeerTcp Peer;
     public ServerPlayerStatus Status;
     public Player Player;
+    public uint LastProcessedInput { get; set; } = 0;
+    public Vector2 LastProcessedPosition { get; set; }
 
     public void Kick(Server server, string reason)
     {
@@ -31,6 +33,5 @@ public class ServerPlayer
             }
         }
         Peer.DisconnectFromHost();
-
     }
 }

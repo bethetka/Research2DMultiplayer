@@ -16,6 +16,7 @@ public static class Packets
     public static readonly int Move = 5; 
     public static readonly int Ping = 6; 
     public static readonly int Pong = 7; 
+    public static readonly int PositionCorrection = 8; 
 
     public static List<IC2SPacket> C2SPackets = new List<IC2SPacket>();
     public static List<IS2CPacket> S2CPackets = new List<IS2CPacket>();
@@ -31,7 +32,9 @@ public static class Packets
         S2CPackets.Add(new S2CMovePacket());
         C2SPackets.Add(new C2SPingPacket());
         S2CPackets.Add(new S2CPongPacket());
+        S2CPackets.Add(new S2CPositionCorrectionPacket());
     }
+
 
     public static void SendPacket(IC2SPacket packet, Client client)
     {

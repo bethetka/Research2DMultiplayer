@@ -4,13 +4,12 @@ using ImGuiNET;
 using Research.Console;
 using Research.Game;
 using Research.Network.Packets.C2S;
+using Research.Network.Packets.S2C;
 using Research.Player;
-using Vector2 = System.Numerics.Vector2;
 
 namespace Research.Network;
 
 using PlayerList = System.Collections.Generic.List<Player.Player>;
-
 
 public partial class Client : Node
 {
@@ -29,7 +28,7 @@ public partial class Client : Node
     private PlayerList _players;
     public Player.Player LocalPlayer;
     public Status ClientStatus;
-    
+
     public StreamPeerTcp Peer => _client;
     public PlayerList Players => _players;
     public string Username { get; set; } = "defaultuser0";
@@ -66,7 +65,7 @@ public partial class Client : Node
     }
 
     private double _pingPongTime = 0;
-    
+
     public override void _Process(double delta)
     {
         base._Process(delta);
@@ -85,11 +84,12 @@ public partial class Client : Node
             {
                 return;
             }
-            ImGui.SetNextWindowPos(new Vector2(16,16));
+
+            ImGui.SetNextWindowPos(new System.Numerics.Vector2(16, 16));
             ImGui.Begin("Client Info", ImGuiWindowFlags.AlwaysAutoResize);
-                ImGui.Text($"Ping: {ServerPing}");
+            ImGui.Text($"Ping: {ServerPing}");
             ImGui.End();
-            
+
             if (ClientStatus == Status.Authenticating)
             {
                 Authenticate(Username);
@@ -137,5 +137,33 @@ public partial class Client : Node
         Packets.Packets.SendPacket(packet, this);
         ResearchConsole.Instance.Info($"authenticating with username {username}");
         ClientStatus = Status.Spawning;
+    }
+
+    public void HandleServerUpdate(int playerId, Vector2 position, uint lastProcessedInput)
+    {
+        var player = Players.Find(p => p.Id == playerId);
+        if (player != null)
+        {
+            if (player == LocalPlayer)
+            {
+                // This is an update for the local player, perform reconciliation
+                player.Movement.ReconcileState(position, lastProcessedInput);
+            }
+            else
+            {
+                // This is an update for a remote player, just update their position
+                player.Position = position;
+            }
+        }
+    }
+
+    public void HandlePositionCorrection(int playerId, Vector2 correctedPosition, uint lastProcessedInput)
+    {
+        var player = Players.Find(p => p.Id == playerId);
+        if (player != null && player == LocalPlayer)
+        {
+            // Force correct the local player's position and reconcile
+            player.Movement.ReconcileState(correctedPosition, lastProcessedInput);
+        }
     }
 }

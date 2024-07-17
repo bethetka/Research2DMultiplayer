@@ -1,6 +1,7 @@
 ﻿using System.Linq;
 using Godot;
 using Research.Game;
+using Research.Network.Packets.S2C;
 using ServerPlayerList = System.Collections.Generic.List<Research.Network.ServerPlayer>;
 
 namespace Research.Network;
@@ -116,8 +117,27 @@ public partial class Server : Node
                     var variant = player.Peer.GetVar();
                     packet.FromVariant(variant);
                     packet.Handle(this, player);
+                    
+                    ValidateAndCorrectPlayerPosition(player);
                 }
             }
+        }
+    }
+    
+    private void ValidateAndCorrectPlayerPosition(ServerPlayer player)
+    {
+        // Simple validation: Check if the player has moved too far since the last processed input
+        float maxMovement = player.Player.Movement.Speed * ((float)GetProcessDeltaTime() * 5); // Allow some leeway
+        float actualMovement = player.Player.Position.DistanceTo(player.LastProcessedPosition);
+
+        if (actualMovement > maxMovement)
+        {
+            // Player has moved too far, correct their position
+            player.Player.Position = player.LastProcessedPosition;
+            
+            // Send a correction packet to the client
+            var correctionPacket = new S2CPositionCorrectionPacket(player.Player.Id, player.LastProcessedPosition, player.LastProcessedInput);
+            Packets.Packets.SendPacket(correctionPacket, player);
         }
     }
 }

@@ -1,16 +1,22 @@
 ﻿using Godot;
 using Godot.Collections;
+using Research.Network.Packets.S2C;
 
 namespace Research.Network.Packets.C2S;
 
 public class C2SMovePacket : IC2SPacket
 {
-    public Vector2 WishDir { get; set; }
     public C2SMovePacket() {}
-    public C2SMovePacket(Vector2 wishDir)
+    
+    public uint Sequence { get; set; }
+    public Vector2 Direction { get; set; }
+
+    public C2SMovePacket(uint sequence, Vector2 direction)
     {
-        WishDir = wishDir;
+        Sequence = sequence;
+        Direction = direction;
     }
+
     
     public int GetId()
     {
@@ -25,25 +31,33 @@ public class C2SMovePacket : IC2SPacket
     public void FromVariant(Variant variant)
     {
         var dictionary = variant.AsGodotDictionary<string, Variant>();
-        WishDir = dictionary[nameof(WishDir)].AsVector2();
+        Direction = dictionary[nameof(Direction)].AsVector2();
+        Sequence = dictionary[nameof(Sequence)].AsUInt32();
     }
 
     public Variant ToVariant()
     {
         return new Dictionary<string, Variant>
         {
-            {nameof(WishDir), WishDir}
+            {nameof(Direction), Direction},
+            {nameof(Sequence), Sequence}
         };
     }
 
     public void Handle(Server server, ServerPlayer sender)
     {
-        sender.Player.Movement.SetWishDir(WishDir);
+        sender.Player.Movement.SetWishDir(Direction);
+        sender.LastProcessedInput = Sequence;
+        sender.LastProcessedPosition = sender.Player.Position;
 
-        var packet = new S2CMovePacket(sender.Player.Id, WishDir, sender.Player.Position);
-        foreach (var player in server.Players)
+        // Broadcast the move to other players
+        var packet = new S2CMovePacket(sender.Player.Id, Direction, sender.LastProcessedPosition, Sequence);
+        foreach (var otherPlayer in server.Players)
         {
-            Packets.SendPacket(packet, player);
+            if (otherPlayer != sender)
+            {
+                Packets.SendPacket(packet, otherPlayer);
+            }
         }
     }
 }

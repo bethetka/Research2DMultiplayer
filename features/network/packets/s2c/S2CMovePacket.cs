@@ -3,19 +3,22 @@ using Godot;
 using Godot.Collections;
 using Research.Console;
 
-namespace Research.Network.Packets.C2S;
+namespace Research.Network.Packets.S2C;
 
 public class S2CMovePacket : IS2CPacket
 {
     public int Id { get; set; }
     public Vector2 WishDir { get; set; }
     public Vector2 Position { get; set; }
+    public uint Sequence { get; set; }
+
     public S2CMovePacket() {}
-    public S2CMovePacket(int id, Vector2 wishDir, Vector2 position)
+    public S2CMovePacket(int id, Vector2 wishDir, Vector2 position, uint sequence)
     {
         Id = id;
         WishDir = wishDir;
         Position = position;
+        Sequence = sequence;
     }
     
     public int GetId()
@@ -34,6 +37,7 @@ public class S2CMovePacket : IS2CPacket
         Id = dictionary[nameof(Id)].AsInt32();
         WishDir = dictionary[nameof(WishDir)].AsVector2();
         Position = dictionary[nameof(Position)].AsVector2();
+        Sequence = (uint)dictionary[nameof(Sequence)].AsInt64();
     }
 
     public Variant ToVariant()
@@ -42,7 +46,8 @@ public class S2CMovePacket : IS2CPacket
         {
             {nameof(Id), Id},
             {nameof(WishDir), WishDir},
-            {nameof(Position), Position}
+            {nameof(Position), Position},
+            {nameof(Sequence), Sequence}
         };
     }
 
@@ -55,7 +60,16 @@ public class S2CMovePacket : IS2CPacket
             return;
         }
         
-        player.Movement.SetWishDir(WishDir);
-        player.Position = Position;
+        if (player == client.LocalPlayer)
+        {
+            // This is an update for the local player, perform reconciliation
+            player.Movement.ReconcileState(Position, Sequence);
+        }
+        else
+        {
+            // This is an update for a remote player, update their position and movement
+            player.Position = Position;
+            player.Movement.SetWishDir(WishDir);
+        }
     }
 }
